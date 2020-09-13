@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta http-equiv="Content-Type" content = "text/html; charset=utf-8">
+        <title>Learning Morse Code</title>
+        <style>
+            .title {font-size: 30pt;}
+            .qa {font-size: 200pt;}
+        </style>
+        <script src="https://rawgit.com/ozdemirburak/morsify/master/dist/morsify.min.js"></script>
+        <script>
+            const trainPattern = [
+                {
+                    name: '欧文英数字(全部)',
+                    letters:['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','1','2','3','4','5','6','7','8','9','0']
+                },{
+                    name: '欧文英数字(短点2つから始まる)',
+                    letters:['F','H','I','S','U','V','2','3','4','5']
+                },{
+                    name: '欧文英数字(短点3つから始まる)',
+                    letters:['H','S','V','3','4','5']
+                },{
+                    name: '欧文英数字(短点のみ)',
+                    letters:['E','H','I','S','5']
+                },{
+                    name: '欧文英数字(短点長点から始まる)',
+                    letters: ['A','J','L','P','R','W','1']
+                },{
+                    name: '欧文英数字(短点長点短点から始まる)',
+                    letters: ['L','R']
+                },{
+                    name: '欧文英数字(短点長点長点から始まる)',
+                    letters: ['J','P','W','1']
+                },{
+                    name: '欧文英数字(長点2つから始まる)',
+                    letters: ['G','M','O','Q','Z','7','8','9','0']
+                },{
+                    name: '欧文英数字(長点のみ)',
+                    letters: ['M','O','T','0']
+                },{
+                    name: '欧文英数字(長点短点から始まる)',
+                    letters: ['B','C','D','K','N','X','Y','6','7','8','9','0']
+                },{
+                    name: '欧文英数字(長点短点短点から始まる)',
+                    letters: ['B','D','X','6']
+                },{
+                    name: '欧文英数字(長点短点長点から始まる)',
+                    letters: ['C','K','Y','Z']
+                },{
+                    name: '欧文記号',
+                    letters: ['.',',',':','?','_','+','-','/','@','(',')','"',"'"]
+                },{
+                    name: '数字',
+                    letters: ['1','2','3','4','5','6','7','8','9','0']
+                }
+            ];
+
+            let wpm = 30;
+            let trainMethodId = 1;
+            let timeQuestionId = 1;
+            let timeAnswerId = 1;
+            let trainPatternId = 0;
+            let buttonValue = "Start";
+            let questionLetter = '';
+            let timerId = null;
+
+            function onchange_wpm(){
+                wpm = Number(document.getElementById('wpm').value);
+            }
+
+            function onchange_trainMethodID(){
+                trainMethodId = document.getElementById("selectMethod").selectedIndex;
+                setTitle();
+            }
+
+            function onchange_timeQuestionID(){
+                timeQuestionId = document.getElementById("selectTimeQuestion").selectedIndex;
+            }
+
+            function onchange_timeAnswerID(){
+                timeAnswerId = document.getElementById("selectTimeAnswer").selectedIndex;
+            }
+
+            function onchange_trainPatternID(){
+                trainPatternId = document.getElementById("selectPattern").selectedIndex;
+            }
+
+            function setTitle(){
+                if(trainMethodId == 0){
+                    document.getElementById('dispTitle').innerHTML = '<div class = "title">問題</div>';
+                }else{
+                    document.getElementById('dispTitle').innerHTML = '<div class = "title">解答</div>';
+                }
+            }
+
+            function setQuestionAnswer(qa){
+                document.getElementById('dispQA').innerHTML = '<div class = "qa">'+qa+'</div>';
+            }
+
+            function setInitOption() {
+                // selectタグを取得する
+                let select = document.getElementById("selectPattern");
+                for(i in trainPattern){
+                    // optionタグを作成する
+                    let option = document.createElement("option");
+                    // optionタグのテキストを設定する
+                    option.text = trainPattern[i].name + '('+trainPattern[i].letters.length+'文字)';
+                    // optionタグのvalueを設定する
+                    option.value = i;
+                    // selectタグの子要素にoptionタグを追加する
+                    select.appendChild(option);
+                }
+
+                document.getElementById('wpm').value = wpm;
+                document.getElementById("selectMethod").selectedIndex = trainMethodId;
+                document.getElementById("selectTimeQuestion").selectedIndex = timeQuestionId;
+                document.getElementById("selectTimeAnswer").selectedIndex = timeAnswerId;
+                document.getElementById("selectPattern").selectedIndex = trainPatternId;
+                document.getElementById("buttonStartStop").value = "Start";
+                setTitle();
+                setQuestionAnswer(questionLetter);
+            }
+
+            function init(){
+                var audio = morsify.audio('',{
+                    unit: 1.2/20,
+                    oscillator: {
+                        type: 'sine',
+                        frequency: 500
+                    }
+                });
+                audio.play(); // play audio
+                setInitOption();
+            }
+
+            function play(plain, wpm){
+                let audio = morsify.audio(plain,{
+                    unit: 1.2/wpm,
+                    oscillator: {
+                        type: 'sine',
+                        frequency: 500
+                    }
+                });
+                
+                let result = audio.play(); // play audio
+                console.log(result);
+            }
+
+            function wpm2waitTimeSec(temp_wpm){
+                return(60/(temp_wpm*5));
+            }
+
+            function question(){
+                let size = trainPattern[trainPatternId].letters.length;
+                questionLetter = trainPattern[trainPatternId].letters[Math.floor( Math.random()*(size))];
+                if(trainMethodId == 0){
+                    // 文字 → 符号
+                    setQuestionAnswer(questionLetter);
+                    timerId = setTimeout(playAnswer,Number(document.getElementById("selectTimeQuestion").value) * 1000);
+                }else{
+                    // 符号 → 文字
+                    setQuestionAnswer('');
+                    play(questionLetter, wpm);
+                    timerId = setTimeout(dispAnswer,(wpm2waitTimeSec(wpm) + Number(document.getElementById("selectTimeQuestion").value)) * 1000);
+                }
+            }
+
+            function playAnswer(){
+                play(questionLetter, wpm);
+                setQuestionAnswer('');
+                timerId = setTimeout(question,(wpm2waitTimeSec(wpm) + Number(document.getElementById("selectTimeQuestion").value)) * 1000)
+            }
+
+            function dispAnswer(){
+                setQuestionAnswer(questionLetter);
+                timerId = setTimeout(question,Number(document.getElementById("selectTimeQuestion").value) * 1000)
+            }
+
+            function start_stop(){
+                buttonValue = document.getElementById("buttonStartStop").value;
+                if(buttonValue == 'Start'){
+                    buttonValue = 'Stop';
+                    question();
+                }else{
+                    buttonValue = 'Start';
+                    clearTimeout(timerId);
+                    timerId = null;
+                }
+                document.getElementById("buttonStartStop").value = buttonValue;
+            }
+
+        </script> 
+    </head>
+    <body>
+        <table>
+            <tr>
+                <th>WPM</th>
+                <td><input type="number" id = "wpm" value = "30" onchange = "onchange_wpm()"></td>
+            </tr>
+            <tr>
+                <th>方法</th>
+                <td>
+                    <select id = "selectMethod" onchange="onchange_trainMethodID()">
+                        <option value = "0">文字→符号</option>
+                        <option value = "1">符号→文字</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>問題提示時間</th>
+                <td>
+                    <select id = "selectTimeQuestion" onchange="onchange_timeQuestionID()">
+                        <option value = "0.5">0.5秒</option>
+                        <option value = "1.0">1.0秒</option>
+                        <option value = "1.5">1.5秒</option>
+                        <option value = "2.0">2.0秒</option>
+                        <option value = "2.5">2.5秒</option>
+                        <option value = "3.0">3.0秒</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>回答提示時間</th>
+                <td>
+                    <select id = "selectTimeAnswer" onchange="onchange_timeAnswerID()">
+                        <option value = "0.5">0.5秒</option>
+                        <option value = "1.0">1.0秒</option>
+                        <option value = "1.5">1.5秒</option>
+                        <option value = "2.0">2.0秒</option>
+                        <option value = "2.5">2.5秒</option>
+                        <option value = "3.0">3.0秒</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>パターン</th>
+                <td>
+                    <select id = "selectPattern" onchange="onchange_trainPatternID()">
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="button" value="Start" onclick="start_stop()" id = "buttonStartStop">
+                </td>
+            </tr>
+        </table>
+        <div>
+            <table border="1">
+                <tr><td width="400" align="center" id = dispTitle></td></tr>
+                <tr><td height = "400" align="center" id = dispQA></td></tr>
+            </table>
+        </div>
+        <script>init();</script>
+    </body>
+</html>
+
