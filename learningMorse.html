@@ -186,12 +186,12 @@
             function playAnswer(){
                 play(questionLetter, wpm);
                 setQuestionAnswer('');
-                timerId = setTimeout(question,(wpm2waitTimeSec(wpm)*questionLetter.length + Number(document.getElementById("selectTimeQuestion").value)) * 1000)
+                timerId = setTimeout(question,(wpm2waitTimeSec(wpm)*questionLetter.length + Number(document.getElementById("selectTimeAnswer").value)) * 1000)
             }
 
             function dispAnswer(){
                 setQuestionAnswer(questionLetter);
-                timerId = setTimeout(question,Number(document.getElementById("selectTimeQuestion").value) * 1000)
+                timerId = setTimeout(question,Number(document.getElementById("selectTimeAnswer").value) * 1000)
             }
 
             function start_stop(){
