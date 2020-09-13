@@ -52,6 +52,12 @@
                 },{
                     name: '数字',
                     letters: ['1','2','3','4','5','6','7','8','9','0']
+                },{
+                    name: 'Q符号',
+                    letters: ['QRH','QRK?','QRK5','QRL','QRM1','QRN1','QRO','QRP','QRS','QRU','QRZ?','QSA3','QSB','QSY','QTH']
+                },{
+                    name: '略符号',
+                    letters: ['AR','AS','BT','CL','EXZ','K','NIL','R','RPT','VA']
                 }
             ];
 
@@ -161,14 +167,14 @@
                     // 符号 → 文字
                     setQuestionAnswer('');
                     play(questionLetter, wpm);
-                    timerId = setTimeout(dispAnswer,(wpm2waitTimeSec(wpm) + Number(document.getElementById("selectTimeQuestion").value)) * 1000);
+                    timerId = setTimeout(dispAnswer,(wpm2waitTimeSec(wpm)*questionLetter.length + Number(document.getElementById("selectTimeQuestion").value)) * 1000);
                 }
             }
 
             function playAnswer(){
                 play(questionLetter, wpm);
                 setQuestionAnswer('');
-                timerId = setTimeout(question,(wpm2waitTimeSec(wpm) + Number(document.getElementById("selectTimeQuestion").value)) * 1000)
+                timerId = setTimeout(question,(wpm2waitTimeSec(wpm)*questionLetter.length + Number(document.getElementById("selectTimeQuestion").value)) * 1000)
             }
 
             function dispAnswer(){
